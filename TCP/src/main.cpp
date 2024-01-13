@@ -3,6 +3,8 @@
 #include <regex>
 #include <string>
 #include <stdlib.h>
+#include <ration.h>
+
 using namespace std;
 
 const char *ssid = "LAINA"; //wifi名
