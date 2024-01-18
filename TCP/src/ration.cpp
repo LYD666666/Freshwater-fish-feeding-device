@@ -25,7 +25,7 @@ void scale_setup()
   
   Serial.println("设置磅秤后:");
 
-  Serial.print("读书: \t\t");
+  Serial.print("读数: \t\t");
   Serial.println(scale.read());                 // 设置磅秤后
 
   Serial.print("read ave: \t\t");
@@ -46,8 +46,6 @@ float ReadCount()
 {
   if (scale.wait_ready_timeout(200)) {
     reading = round(scale.get_units());
-    Serial.print("Weight: ");
-    Serial.println(reading);
   }
   return reading;
 }
