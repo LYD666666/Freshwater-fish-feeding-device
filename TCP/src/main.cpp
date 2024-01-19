@@ -11,10 +11,14 @@
 #include <ESPmDNS.h>
 #include <WiFiUdp.h>
 
+#define RightMotor1 16	//Arduino的6号引脚连接在接D2端口
+#define RightMotor2 17	//Arduino的9号引脚连接在接D3端口
+#define PWM1 13
+
 using namespace std;
 
-const char *ssid = "LAINA"; //wifi名  LAINA vivo X90s
-const char *password = "b8AxM8lqq";//wifi密码 b8AxM8lqq zhrmghgws
+const char *ssid = "vivo X90s"; //wifi名  LAINA vivo X90s
+const char *password = "zhrmghgws";//wifi密码 b8AxM8lqq zhrmghgws
 const char* ntpServer = "pool.ntp.org"; //ntp服务器
 const char *timer_task = "timing"; //定时指令检测
 const char *ration_task = "ration";//定量指令检测
@@ -22,10 +26,13 @@ String weight_task = "weight:";//称重指令检测
 float num; //赋值实时称重量
 String jsonweight,weight; //拼接成json格式发送
 int ration_function,timer_hour_function,timer_min_function; //传递重量,时间参数
+int outputValue = 0;//PWM值读取
+int ration_flag = 0;//称重标志位
+int weight_t;
 
 hw_timer_t * timer = NULL;                        // 声明一个定时器
 
-const IPAddress serverIP(192,168,31,140); //欲访问的服务端IP地址 192,168,31,140   192,168,91,53
+const IPAddress serverIP(192,168,181,53); //欲访问的服务端IP地址 192,168,31,140   192,168,91,53
 uint16_t serverPort = 8080;         //服务端口号
 
 WiFiUDP ntpUDP; // NTP UDP客户端
@@ -44,6 +51,13 @@ Alarm alarms[3]; // 3个闹钟槽
 void scale_setup();   //称重模块初始化
 float ReadCount(void);//AD转换获取数据
 
+/*电机初始化*/
+void Motor_Init()
+{
+  pinMode(RightMotor1, OUTPUT);
+  pinMode(RightMotor2, OUTPUT);
+  pinMode(PWM1,OUTPUT);
+}
 
 /*
 	定时称重，反馈当前饲料量,与主程序循环分割，独立于外部计时
@@ -62,6 +76,31 @@ void sendweight(void)
         client.print(jsonweight);
         Serial.println(jsonweight);
   }
+}
+
+/*
+	定时任务：旋转舵机出料
+*/
+void PWM_Control(int ration_function)
+{
+      weight_t = num;
+      Serial.println(weight_t);
+
+      digitalWrite(RightMotor1,HIGH);
+      digitalWrite(RightMotor2,LOW);
+      analogWrite(PWM1, 100); //将a的值赋给motorPin
+
+      Serial.println("目标重量为：");
+      Serial.println(weight_t - ration_function);
+        while(num >  weight_t - ration_function )
+        {
+          sendweight();
+        }
+         digitalWrite(RightMotor1,LOW);
+          digitalWrite(RightMotor2,LOW);
+          analogWrite(PWM1, 0); //将a的值赋给motorPin
+          Serial.println("到达目标");
+
 }
 
 /*
@@ -92,9 +131,14 @@ void checkAlarms() {
 
       if(timeClient.getHours() == alarms[i].hour &&  
          timeClient.getMinutes() == alarms[i].min) {
-
+           if(ration_flag == 0)
+          {
+            PWM_Control(ration_function);//让电机转动出料，减少重量
+            ration_flag == 1;
+          }
          Serial.println("Alarm triggered!");
       }
+      else ration_flag == 0;
     }
   }
 }
@@ -148,7 +192,9 @@ void setup()
     Serial.begin(115200);
     Serial.println();
 
-    hw_timer_t * timer = timerBegin(0, 80, true); //使用定时器 0,分辨率 80Hz,向上计数
+    Motor_Init(); //电机引脚初始化
+    digitalWrite(RightMotor1,LOW);
+    digitalWrite(RightMotor2,LOW);
 
     WiFi.mode(WIFI_STA);
     WiFi.setSleep(false); //关闭STA模式下wifi休眠，提高响应速度
@@ -166,7 +212,8 @@ void setup()
 
     timeClient.begin(); // 初始化NTP同步
     timeClient.setTimeOffset(28800);  // 设置时区偏移量为8小时（28800秒）
-    setAlarm(0,7,30); //设置闹钟1
+    setAlarm(0,0,0); //设置闹钟1
+    
 
     Serial.println("尝试访问服务器");
     client.connect(serverIP, serverPort);
@@ -196,6 +243,10 @@ void loop()
     {
         String strBuf   = client.readStringUntil('\n'); //读取数据到换行符
 
+         outputValue=analogRead(PWM1); //outputValue:0~1023
+         Serial.print("output=");
+         Serial.println(outputValue);
+
         /*收到的数据统一成类似Json格式，如{alarm_timing:12,alarm_minute:30,ration:60}*/
         String str_hour = strBuf.substring(strBuf.indexOf("alarm_timing:") + ((String)"alarm_timing:").length(), strBuf.indexOf("alarm_minute:")-1);
         String str_minute = strBuf.substring(strBuf.indexOf("alarm_minute:") + ((String)"alarm_minute:").length(), strBuf.indexOf("ration:")-1);
@@ -210,8 +261,10 @@ void loop()
         Serial.print("str_ration: ");
         Serial.println(ration_function);
         setAlarm(0,timer_hour_function,timer_min_function);
-      
+        PWM_Control(ration_function);
     }
 
     vTaskDelay(3000/portTICK_PERIOD_MS);
+     
+  
 }

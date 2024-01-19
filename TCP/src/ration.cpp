@@ -21,7 +21,7 @@ void scale_setup()
   Serial.println(scale.get_units(5), 1);  // 打印ADC的5个读数的平均值减去皮重（未设置）
 
   scale.set_scale(CALIBRATION_FACTOR);   // this value is obtained by calibrating the scale with known weights; see the README for details
-  scale.tare();               // reset the scale to 0
+  //scale.tare();               // reset the scale to 0
   
   Serial.println("设置磅秤后:");
 
