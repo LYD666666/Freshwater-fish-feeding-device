@@ -403,12 +403,8 @@ void MainWindow::on_charts1_rest_clicked()
 void MainWindow::on_pushButton_clicked()
 {
     QLineSeries *series0 = (QLineSeries *)ui->graphicsView->chart()->series().at(0);
-    QLineSeries *series1 = (QLineSeries *)ui->graphicsView->chart()->series().at(1);
-    QLineSeries *series2 = (QLineSeries *)ui->graphicsView->chart()->series().at(2);
 
     series0->clear();
-    series1->clear();
-    series2->clear();
 }
 
 
@@ -476,10 +472,10 @@ void MainWindow::on_set_yu_bt_clicked()
 {
     QString sendThrshold;
 
-    sendThrshold = EnsoilHumi + " " + "soil:"+ ui->soil_yu_la->text()+";"+
-                   Enrain     + " " + "rain:"+ ui->rain_yu_la->text()+";"+
-                   Entemp     + " " + "temp:"+ ui->temp_yu_la->text()+";"+
-                   Enlight    + " " + "light:"+ui->light_yu_la->text();
+    sendThrshold = EnsoilHumi + "{" + "temp:"+ ui->soil_yu_la->text()+","+
+                        + " " + "alarm_timing:"+ ui->rain_yu_la->text()+","+
+                        + " " + "alarm_minute:"+ ui->temp_yu_la->text()+","+
+                        + " " + "ration:"+ui->light_yu_la->text()+"}";
 
     tcpSocket->write(sendThrshold.toLocal8Bit());
 

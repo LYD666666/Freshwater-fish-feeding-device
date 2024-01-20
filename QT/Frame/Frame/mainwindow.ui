@@ -291,7 +291,7 @@
      </font>
     </property>
     <property name="title">
-     <string>检测部分</string>
+     <string>余料检测部分</string>
     </property>
     <property name="alignment">
      <set>Qt::AlignCenter</set>
@@ -659,7 +659,7 @@
      <rect>
       <x>650</x>
       <y>290</y>
-      <width>201</width>
+      <width>221</width>
       <height>167</height>
      </rect>
     </property>
@@ -710,12 +710,12 @@
       <rect>
        <x>176</x>
        <y>33</y>
-       <width>21</width>
+       <width>31</width>
        <height>16</height>
       </rect>
      </property>
      <property name="text">
-      <string>%</string>
+      <string>g/次</string>
      </property>
     </widget>
     <widget class="QLabel" name="label_2">
@@ -728,7 +728,7 @@
       </rect>
      </property>
      <property name="text">
-      <string>%</string>
+      <string>h</string>
      </property>
     </widget>
     <widget class="QLabel" name="label_3">
@@ -741,7 +741,7 @@
       </rect>
      </property>
      <property name="text">
-      <string>%</string>
+      <string>m</string>
      </property>
     </widget>
     <widget class="QPushButton" name="set_yu_bt">
@@ -804,7 +804,7 @@
       </font>
      </property>
      <property name="text">
-      <string>投食总重</string>
+      <string>投喂间隔</string>
      </property>
     </widget>
     <widget class="QCheckBox" name="checkBox_2">
@@ -817,7 +817,7 @@
       </rect>
      </property>
      <property name="text">
-      <string>每次重量</string>
+      <string>定时(h)</string>
      </property>
     </widget>
     <widget class="QCheckBox" name="checkBox_3">
@@ -830,7 +830,7 @@
       </rect>
      </property>
      <property name="text">
-      <string>投食次数</string>
+      <string>定时(min)</string>
      </property>
     </widget>
     <widget class="QCheckBox" name="checkBox_4">
@@ -843,7 +843,7 @@
       </rect>
      </property>
      <property name="text">
-      <string>投食间隔</string>
+      <string>定量</string>
      </property>
     </widget>
     <widget class="QLabel" name="label_12">
@@ -856,7 +856,7 @@
       </rect>
      </property>
      <property name="text">
-      <string>%</string>
+      <string>g</string>
      </property>
     </widget>
     <widget class="QLineEdit" name="light_yu_la">
@@ -991,9 +991,9 @@
     <property name="geometry">
      <rect>
       <x>20</x>
-      <y>210</y>
+      <y>190</y>
       <width>401</width>
-      <height>201</height>
+      <height>241</height>
      </rect>
     </property>
     <property name="text">
@@ -1003,6 +1003,7 @@
      <set>Qt::AlignCenter</set>
     </property>
    </widget>
+   <zorder>label_13</zorder>
    <zorder>groupBox_4</zorder>
    <zorder>graphicsView</zorder>
    <zorder>groupBox_5</zorder>
@@ -1021,7 +1022,6 @@
    <zorder>charts1_rest</zorder>
    <zorder>layoutWidget</zorder>
    <zorder>layoutWidget_2</zorder>
-   <zorder>label_13</zorder>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
