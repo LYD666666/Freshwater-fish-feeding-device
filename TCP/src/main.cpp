@@ -17,8 +17,8 @@
 
 using namespace std;
 
-const char *ssid = "vivo X90s"; //wifi名  LAINA vivo X90s
-const char *password = "zhrmghgws";//wifi密码 b8AxM8lqq zhrmghgws
+const char *ssid = "LAINA"; //wifi名  LAINA vivo X90s
+const char *password = "b8AxM8lqq";//wifi密码 b8AxM8lqq zhrmghgws
 const char* ntpServer = "pool.ntp.org"; //ntp服务器
 const char *timer_task = "timing"; //定时指令检测
 const char *ration_task = "ration";//定量指令检测
@@ -32,7 +32,7 @@ int weight_t;
 
 hw_timer_t * timer = NULL;                        // 声明一个定时器
 
-const IPAddress serverIP(192,168,181,53); //欲访问的服务端IP地址 192,168,31,140   192,168,91,53
+const IPAddress serverIP(192,168,31,140); //欲访问的服务端IP地址 192,168,31,140   192,168,91,53
 uint16_t serverPort = 8080;         //服务端口号
 
 WiFiUDP ntpUDP; // NTP UDP客户端
@@ -261,7 +261,7 @@ void loop()
         Serial.print("str_ration: ");
         Serial.println(ration_function);
         setAlarm(0,timer_hour_function,timer_min_function);
-        PWM_Control(ration_function);
+        //PWM_Control(ration_function);
     }
 
     vTaskDelay(3000/portTICK_PERIOD_MS);
