@@ -25,7 +25,7 @@ public:
     bool clearDBTable();
     void SelectData();
 
-    void UpdataToDataBase(QString Sweight);
+    void UpdataToDataBase(QString Stemp,QString Shumi,QString Slight,QString Ssoil,QString Smq2,QString Srain);
     //table 类
     QSqlQueryModel *tableModel;
 

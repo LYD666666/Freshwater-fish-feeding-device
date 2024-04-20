@@ -11,6 +11,13 @@ database::database(QWidget *parent) :
 {
     ui->setupUi(this);
 
+    //检测有没有mysql驱动
+        qDebug()<<"available drivers:";
+        QStringList drivers = QSqlDatabase::drivers();
+        foreach(QString driver, drivers)
+            qDebug()<<driver;
+
+
     QSqlDatabase db = QSqlDatabase::addDatabase("QMYSQL");
 
     db.setHostName("127.0.0.1");
@@ -44,13 +51,13 @@ database::database(QWidget *parent) :
      ui->tableView->setColumnWidth(7,70);
 
      /*初始化下拉框*/
-     ui->comboBox->addItem("temp");
-     ui->comboBox->addItem("humi");
-     ui->comboBox->addItem("light");
+     ui->comboBox->addItem("BeforeWeight");
+     ui->comboBox->addItem("AfterWeight");
+     ui->comboBox->addItem("RealWeight");
 
-     ui->comboBox->addItem("soil");
-     ui->comboBox->addItem("mq2");
-     ui->comboBox->addItem("rain");
+     ui->comboBox->addItem("RecoveryRate");
+     ui->comboBox->addItem("WeightTime");
+     ui->comboBox->addItem("RecoveryTime");
 
      /*设置日期查询的初始化*/
      ui->dateTimeEdit_2->setDateTime(QDateTime::currentDateTime().addSecs(0));
@@ -65,17 +72,23 @@ database::database(QWidget *parent) :
 void database::SelectAllPushTableData(){
     tableModel = new QSqlQueryModel;//定义一个数据库模型，指定父对象
 
-    QString strSelectData = "select * from qtdata";
+    QString strSelectData = "select * from weight_cat";
     tableModel->setQuery(strSelectData);
 
     ui->tableView->setModel(tableModel);
 }
 
-void database::UpdataToDataBase(QString Sweight)
+void database::UpdataToDataBase(QString Stemp,QString Shumi,QString Slight,QString Ssoil,QString Smq2,QString Srain)
 {
     float val[6];
 
-    val[0] = Sweight.toFloat();
+    val[0] = Stemp.toFloat();
+    val[1] = Shumi.toFloat();
+    val[2] = Slight.toFloat();
+
+    val[3] = Ssoil.toFloat();
+    val[4] = Smq2.toFloat();
+    val[5] = Srain.toFloat();
 
    // qDebug()<<val[0]<<" "<<val[1]<<" "<<val[2]<<" "<<val[3]<<" "<<val[4]<<" "<<val[5]<<" "<<" ";
 
@@ -94,7 +107,7 @@ bool database::insertData(float val[6])
 
     //QDateTime currentTime = QDateTime::currentDateTime();
 
-    QString stInsertData = "insert into qtdata values (?,?,?,?,?,?,?,?)";
+    QString stInsertData = "insert into weight_cat values (?,?,?,?,?,?,?,?)";
     query.prepare(stInsertData);
 
     query.addBindValue(NULL);
@@ -122,7 +135,7 @@ bool database::insertData(float val[6])
 bool database::clearDBTable()
 {
     QSqlQuery query;
-    QString strClearDB = "delete from qtdata";
+    QString strClearDB = "delete from weight_cat";
     query.prepare(strClearDB);
     if(!query.exec())
     {
@@ -141,7 +154,7 @@ void database::SelectData()
     QString startTime2 = ui->dateTimeEdit_2->text();
 
     //查询操作
-    QString strSelectData = "select *from qtdata where CurrenTime between '"+startTime+"' and '"+startTime2+"';";
+    QString strSelectData = "select *from weight_cat where CurrenTime between '"+startTime+"' and '"+startTime2+"';";
     tableModel->setQuery(strSelectData);
     ui->tableView->setModel(tableModel);
 }
@@ -218,7 +231,7 @@ void database::on_select_val_bt_clicked()
     QString upNum = ui->spinBox_2->text();
 
     //查询操作
-    QString strSelectData = "select *from qtdata where "+strNum+" >= "+downNum+" && "+strNum+"<="+upNum+";";
+    QString strSelectData = "select *from weight_cat where "+strNum+" >= "+downNum+" && "+strNum+"<="+upNum+";";
 
     tableModel->setQuery(strSelectData);
     ui->tableView->setModel(tableModel);

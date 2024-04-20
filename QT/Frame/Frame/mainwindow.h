@@ -85,8 +85,6 @@ void ttest();
 
     void on_set_yu_bt_clicked();
 
-    void on_set_light_bt_clicked();
-
     void on_pushButton_2_clicked();
 
     void on_checkBox_4_stateChanged(int arg1);
@@ -107,7 +105,7 @@ private:
     void DisplayChart1();
 
     void BackDataParsing(QString strBuf);//数据解析
-    void ToUpdata_Lab(QString Sweight);//更新至标签
+    void ToUpdata_Lab(QString Stemp,QString Shumi,QString Slight,QString Ssoil,QString Smq2,QString Srain);//更新至标签
 
     //定时器1
      QTimer *timer;

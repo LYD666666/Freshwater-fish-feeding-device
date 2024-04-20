@@ -29,6 +29,12 @@ bool flag_Send=0;
 
 //温湿度变量
 float temp_data;
+float humi_data;
+float light_data;
+float soil_data;
+float mq2_data;
+float rain_data;
+float weight_data;
 
 
 /*阈值*/
@@ -75,14 +81,14 @@ MainWindow::MainWindow(QWidget *parent)
      ui->toolBar->setIconSize(si);
 
 
-    ui->ip_edi->setText("192.168.31.140");
+    ui->ip_edi->setText("192.168.83.86");
     ui->port_edi->setText("8080");
 
     /*数据库内容*/
     //初始化数据库
     dbui = new database;
 
-    setWindowTitle("--Intelligent Terminal Of Internet Of Things--         测试版  V5.0 22-0909     制作：拾贰");
+    setWindowTitle("--Intelligent Terminal Of Internet Of Things-- ");
 }
 
 /*网络部分*/
@@ -104,8 +110,15 @@ void MainWindow::connected_Slot(){
 }
 
 //文本显示
-void MainWindow::ToUpdata_Lab(QString Sweight){
-    ui->temp_la->setText(Sweight+"%");
+void MainWindow::ToUpdata_Lab(QString Stemp,QString Shumi,QString Slight,QString Ssoil,QString Smq2,QString Srain){
+    ui->temp_la->setText(Stemp+"g");
+    ui->humi_la->setText(Shumi+"g");
+     ui->light_la->setText(Slight+"g");
+
+     ui->soil_la->setText(Ssoil+"%");
+     ui->mq2_la->setText(Smq2+"min");
+     ui->rain_la->setText(Srain+"min");
+
 
 }
 
@@ -113,24 +126,58 @@ void MainWindow::ToUpdata_Lab(QString Sweight){
 void MainWindow::BackDataParsing(QString strBuf){
 
     //查找是否为参数;  -1表示没有该子串
-   if(strBuf.startsWith("weight")){
+     if(strBuf.startsWith("Params")){
 
-        //表一数据
-        QString str = strBuf.mid(strBuf.indexOf("weight:")+((QString)"weight:").length());
-        tcpSocket->write(str.toUtf8());
-        tcpSocket->write("->");
+          //表一数据
+          QString str = strBuf.mid(strBuf.indexOf("BeforeWeight:")+((QString)"BeforeWeight:").length(),strBuf.indexOf("AfterWeight:")-strBuf.indexOf("BeforeWeight:")-((QString)"BeforeWeight:").length()-1);
+          tcpSocket->write(str.toUtf8());
+          tcpSocket->write("->");
+
+          QString st2 = strBuf.mid(strBuf.indexOf("AfterWeight:")+((QString)"AfterWeight:").length(),strBuf.indexOf("RealWeight:")-strBuf.indexOf("AfterWeight:")-((QString)"AfterWeight:").length()-1);
+          tcpSocket->write(st2.toUtf8());
+          tcpSocket->write("->");
+
+          QString st3 = strBuf.mid(strBuf.indexOf("RealWeight:")+((QString)"RealWeight:").length(),strBuf.indexOf("RecoveryRate:")-strBuf.indexOf("RealWeight:")-((QString)"RealWeight:").length()-1);
+          tcpSocket->write(st3.toUtf8());
+          tcpSocket->write("->");
 
 
-        //更新至表格
-         temp_data = str.toFloat();
+          //表二数据
+          QString st4 = strBuf.mid(strBuf.indexOf("RecoveryRate:")+((QString)"RecoveryRate:").length(),strBuf.indexOf("WeightTime:")-strBuf.indexOf("RecoveryRate:")-((QString)"RecoveryRate:").length()-1);
+          tcpSocket->write(st4.toUtf8());
+          tcpSocket->write("->");
 
-       //送入标签
-       ToUpdata_Lab(str);
+          QString st5 = strBuf.mid(strBuf.indexOf("WeightTime:")+((QString)"WeightTime:").length(),strBuf.indexOf("RecoveryTime:")-strBuf.indexOf("WeightTime:")-((QString)"WeightTime:").length()-1);
+          tcpSocket->write(st5.toUtf8());
+          tcpSocket->write("->");
 
-       //送入数据库
-        dbui->UpdataToDataBase(str);
+          QString st6 = strBuf.mid(strBuf.indexOf("RecoveryTime:")+((QString)"RecoveryTime:").length(),strBuf.indexOf("}")-strBuf.indexOf("RecoveryTime:")-((QString)"RecoveryTime:").length()-1);
+          tcpSocket->write(st6.toUtf8());
 
+
+          //更新至表格
+           temp_data = str.toInt();
+           humi_data = st2.toInt();
+           light_data = st3.toInt();
+
+           soil_data = st4.toInt();
+           mq2_data = st5.toInt();
+           rain_data = st6.toInt();
+
+         //送入标签
+         ToUpdata_Lab(str,st2,st3,st4,st5,st6);
+
+         //送入数据库
+          dbui->UpdataToDataBase(str,st2,st3,st4,st5,st6);
    }
+    else
+     {
+         QString str = strBuf.mid(strBuf.indexOf("weight:")+((QString)"weight:").length());
+         tcpSocket->write(str.toUtf8());
+         tcpSocket->write("->");
+
+         weight_data = str.toFloat();
+     }
 }
 
 //收到的数据放入接受框   解析
@@ -232,7 +279,7 @@ void MainWindow::DisplayChart1(){
     //获取初始化的series;
     QLineSeries *series0 = (QLineSeries *)ui->graphicsView->chart()->series().at(0);
 
-    series0->append(currentTime.toMSecsSinceEpoch(),temp_data);
+    series0->append(currentTime.toMSecsSinceEpoch(),weight_data);
 
     qchart->axisX()->setMin(QDateTime::currentDateTime().addSecs(-5*30));
     qchart->axisX()->setMax(QDateTime::currentDateTime().addSecs(5*30));
@@ -415,15 +462,54 @@ short temp_threshold;
 
 */
 
+//复选框  2选中 0未选中
+void MainWindow::on_checkBox_stateChanged(int arg1)
+{
+    qDebug()<<arg1;
+    if(arg1==2)
+        EnsoilHumi="enable";
+    else
+        EnsoilHumi="disable";
+}
+
+void MainWindow::on_checkBox_2_stateChanged(int arg1)
+{
+    qDebug()<<arg1;
+
+    if(arg1==2)
+         Enrain="enable";
+    else
+         Enrain="disable";
+}
+
+void MainWindow::on_checkBox_3_stateChanged(int arg1)
+{
+     qDebug()<<arg1;
+
+     if(arg1==2)
+          Entemp="enable";
+     else
+          Entemp="disable";
+}
+
+void MainWindow::on_checkBox_4_stateChanged(int arg1)
+{
+
+    if(arg1==2)
+         Enlight="enable";
+    else
+         Enlight="disable";
+}
+
 //清空内容
 void MainWindow::on_clear_yu_bt_clicked()
 {
-
+     ui->checkBox->setChecked(false);
      ui->checkBox_2->setChecked(false);
      ui->checkBox_3->setChecked(false);
      ui->checkBox_4->setChecked(false);
 
-
+     ui->soil_yu_la->clear();
      ui->temp_yu_la->clear();
      ui->rain_yu_la->clear();
      ui->light_yu_la->clear();
@@ -433,7 +519,8 @@ void MainWindow::on_set_yu_bt_clicked()
 {
     QString sendThrshold;
 
-    sendThrshold =  "{" "alarm_timing:"+ ui->rain_yu_la->text()+","+
+    sendThrshold = EnsoilHumi + "{" + "temp:"+ ui->soil_yu_la->text()+","+
+                        + " " + "alarm_timing:"+ ui->rain_yu_la->text()+","+
                         + " " + "alarm_minute:"+ ui->temp_yu_la->text()+","+
                         + " " + "ration:"+ui->light_yu_la->text()+"}";
 
@@ -442,11 +529,11 @@ void MainWindow::on_set_yu_bt_clicked()
 }
 
 
-//光强控制
-void MainWindow::on_set_light_bt_clicked()
-{
-   tcpSocket->write(("Pwm:"+QString::number(light_pwm)).toLocal8Bit());
-}
+//光强控制(tcp传输指令参考)
+//void MainWindow::on_set_light_bt_clicked()
+//{
+//   tcpSocket->write(("Pwm:"+QString::number(light_pwm)).toLocal8Bit());
+//}
 
 
 /*数据库操作*/

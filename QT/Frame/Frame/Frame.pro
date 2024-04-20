@@ -10,6 +10,10 @@ CONFIG += c++11
 # deprecated API in order to know how to port your code away from it.
 DEFINES += QT_DEPRECATED_WARNINGS
 
+OTHER_FILES += mysql.json
+PLUGIN_CLASS_NAME = QMYSQLDriverPlugin
+TARGET = qsqlmysql
+
 # You can also make your code fail to compile if it uses deprecated APIs.
 # In order to do so, uncomment the following line.
 # You can also select to disable deprecated APIs only up to a certain version of Qt.
@@ -35,6 +39,15 @@ FORMS += \
     deb.ui \
     mainwindow.ui
 
+# ！！你安装的mysql的lib路径
+LIBS += -L $$quote(E:/Program Files/MySQL/MySQL Server 8.0/lib) -llibmysql
+# ！！你安装的mysql的include路径
+INCLUDEPATH += $$quote(E:/Program Files/MySQL/MySQL Server 8.0/include)
+# ！！你安装的mysql的include路径
+DEPENDPATH += $$quote(E:/Program Files/MySQL/MySQL Server 8.0/include)
+
+DESTDIR = ../mysql/lib/
+
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
@@ -42,3 +55,5 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 
 RESOURCES += \
     ../img/picture.qrc
+
+

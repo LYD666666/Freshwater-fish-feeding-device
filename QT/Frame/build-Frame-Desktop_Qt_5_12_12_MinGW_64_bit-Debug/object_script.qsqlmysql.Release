@@ -1,0 +1,11 @@
+release/data_global.o
+release/database.o
+release/deb.o
+release/getcamimagedata.o
+release/main.o
+release/mainwindow.o
+release/qrc_picture.o
+release/moc_database.o
+release/moc_deb.o
+release/moc_getcamimagedata.o
+release/moc_mainwindow.o

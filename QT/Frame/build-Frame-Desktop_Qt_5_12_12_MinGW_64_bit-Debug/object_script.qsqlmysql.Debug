@@ -1,0 +1,11 @@
+debug/data_global.o
+debug/database.o
+debug/deb.o
+debug/getcamimagedata.o
+debug/main.o
+debug/mainwindow.o
+debug/qrc_picture.o
+debug/moc_database.o
+debug/moc_deb.o
+debug/moc_getcamimagedata.o
+debug/moc_mainwindow.o
