@@ -415,54 +415,15 @@ short temp_threshold;
 
 */
 
-//复选框  2选中 0未选中
-void MainWindow::on_checkBox_stateChanged(int arg1)
-{
-    qDebug()<<arg1;
-    if(arg1==2)
-        EnsoilHumi="enable";
-    else
-        EnsoilHumi="disable";
-}
-
-void MainWindow::on_checkBox_2_stateChanged(int arg1)
-{
-    qDebug()<<arg1;
-
-    if(arg1==2)
-         Enrain="enable";
-    else
-         Enrain="disable";
-}
-
-void MainWindow::on_checkBox_3_stateChanged(int arg1)
-{
-     qDebug()<<arg1;
-
-     if(arg1==2)
-          Entemp="enable";
-     else
-          Entemp="disable";
-}
-
-void MainWindow::on_checkBox_4_stateChanged(int arg1)
-{
-
-    if(arg1==2)
-         Enlight="enable";
-    else
-         Enlight="disable";
-}
-
 //清空内容
 void MainWindow::on_clear_yu_bt_clicked()
 {
-     ui->checkBox->setChecked(false);
+
      ui->checkBox_2->setChecked(false);
      ui->checkBox_3->setChecked(false);
      ui->checkBox_4->setChecked(false);
 
-     ui->soil_yu_la->clear();
+
      ui->temp_yu_la->clear();
      ui->rain_yu_la->clear();
      ui->light_yu_la->clear();
@@ -472,8 +433,7 @@ void MainWindow::on_set_yu_bt_clicked()
 {
     QString sendThrshold;
 
-    sendThrshold = EnsoilHumi + "{" + "temp:"+ ui->soil_yu_la->text()+","+
-                        + " " + "alarm_timing:"+ ui->rain_yu_la->text()+","+
+    sendThrshold =  "{" "alarm_timing:"+ ui->rain_yu_la->text()+","+
                         + " " + "alarm_minute:"+ ui->temp_yu_la->text()+","+
                         + " " + "ration:"+ui->light_yu_la->text()+"}";
 

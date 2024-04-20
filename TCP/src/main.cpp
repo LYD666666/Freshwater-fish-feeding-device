@@ -24,11 +24,24 @@ const char *timer_task = "timing"; //定时指令检测
 const char *ration_task = "ration";//定量指令检测
 String weight_task = "weight:";//称重指令检测
 float num; //赋值实时称重量
-String jsonweight,weight; //拼接成json格式发送
-int ration_function,timer_hour_function,timer_min_function; //传递重量,时间参数
+String jsonweight,weight; //拼接成json格式发送实时重量
+int ration_function=60,timer_hour_function,timer_min_function; //传递重量,时间参数
 int outputValue = 0;//PWM值读取
 int ration_flag = 0;//称重标志位
-int weight_t;
+int weight_t;     //实时重量
+int BeforeTime;
+int AfterTime;
+String str_ration,str_hour,str_minute;
+
+/*需要发送到本地服务器与数据库存储*/
+int BeforeWeight;
+int AfterWeight;
+int RealWeight;
+String RecoveryRate;
+int WeightTime;
+String RecoveryTime;
+String Send_data ="Params{BeforeWeight:%d;AfterWeight:%d;RealWeight:%d;RecoveryRate:%s;WeightTime:%d;RecoveryTime:%s;}";
+
 
 hw_timer_t * timer = NULL;                        // 声明一个定时器
 
@@ -79,7 +92,7 @@ void sendweight(void)
 }
 
 /*
-	定时任务：旋转舵机出料
+	定时任务：旋转舵机出料并传输数据到数据库
 */
 void PWM_Control(int ration_function)
 {
@@ -89,6 +102,7 @@ void PWM_Control(int ration_function)
       digitalWrite(RightMotor1,HIGH);
       digitalWrite(RightMotor2,LOW);
       analogWrite(PWM1, 100); //将a的值赋给motorPin
+      delay(1000);
 
       Serial.println("目标重量为：");
       Serial.println(weight_t - ration_function);
@@ -101,6 +115,24 @@ void PWM_Control(int ration_function)
           analogWrite(PWM1, 0); //将a的值赋给motorPin
           Serial.println("到达目标");
 
+        /*
+            传输数据到数据库
+            发送的数据统一成类似Json格式，如Params{BeforeWeight:404;AfterWeight:400;RealWeight:4;RecoveryRate:NULL;WeightTime:12;RecoveryTime:NULL;}
+        */
+          char buffer[100];
+
+          AfterTime = timeClient.getHours()*60+timeClient.getMinutes();
+          AfterWeight = ReadCount();
+          RealWeight = BeforeWeight - AfterWeight;
+          WeightTime = AfterTime - BeforeTime;
+          RecoveryRate = "NULL";
+          RecoveryTime = "NULL";
+
+          sprintf(buffer, Send_data.c_str(), BeforeWeight, AfterWeight, RealWeight, RecoveryRate.c_str(), WeightTime, RecoveryTime.c_str());
+          // 发送字符串
+          Serial.println(buffer);
+          //发送数据到数据库
+          client.print(buffer);
 }
 
 /*
@@ -131,6 +163,9 @@ void checkAlarms() {
 
       if(timeClient.getHours() == alarms[i].hour &&  
          timeClient.getMinutes() == alarms[i].min) {
+          BeforeTime = timeClient.getHours()*60+timeClient.getMinutes();
+          BeforeWeight = ReadCount();
+
            if(ration_flag == 0)
           {
             PWM_Control(ration_function);//让电机转动出料，减少重量
@@ -219,6 +254,10 @@ void setup()
     client.connect(serverIP, serverPort);
     Serial.println("访问成功");
 
+    //  digitalWrite(RightMotor1,HIGH);
+    // digitalWrite(RightMotor2,LOW);
+    // analogWrite(PWM1, 100); //将a的值赋给motorPin
+
     // xTaskCreate(sendweight,"sendweight",2024,NULL,1,&weightHandle);
 }
 
@@ -239,18 +278,21 @@ void loop()
         }
     }
 
+    // PWM_Control(ration_function);
+
     if (client.available()) //如果有数据可读取
     {
         String strBuf   = client.readStringUntil('\n'); //读取数据到换行符
 
-         outputValue=analogRead(PWM1); //outputValue:0~1023
-         Serial.print("output=");
-         Serial.println(outputValue);
+        /*analogRead会把PWM波输出卡住，初步认定是循环过程中不断读取有影响*/
+        //  outputValue=analogRead(PWM1); //outputValue:0~1023
+        //  Serial.print("output=");
+        //  Serial.println(outputValue);
 
         /*收到的数据统一成类似Json格式，如{alarm_timing:12,alarm_minute:30,ration:60}*/
-        String str_hour = strBuf.substring(strBuf.indexOf("alarm_timing:") + ((String)"alarm_timing:").length(), strBuf.indexOf("alarm_minute:")-1);
-        String str_minute = strBuf.substring(strBuf.indexOf("alarm_minute:") + ((String)"alarm_minute:").length(), strBuf.indexOf("ration:")-1);
-        String str_ration = strBuf.substring(strBuf.indexOf("ration:") + ((String)"ration:").length(), strBuf.indexOf("}"));
+        str_hour = strBuf.substring(strBuf.indexOf("alarm_timing:") + ((String)"alarm_timing:").length(), strBuf.indexOf("alarm_minute:")-1);
+        str_minute = strBuf.substring(strBuf.indexOf("alarm_minute:") + ((String)"alarm_minute:").length(), strBuf.indexOf("ration:")-1);
+        str_ration = strBuf.substring(strBuf.indexOf("ration:") + ((String)"ration:").length(), strBuf.indexOf("}"));
         timer_hour_function = str_hour.toInt();//改变全局变量，导入定时任务进行处理
         timer_min_function = str_minute.toInt();//改变全局变量，导入定时任务进行处理
         ration_function = str_ration.toInt();//改变全局变量，导入定时任务进行处理
@@ -261,7 +303,7 @@ void loop()
         Serial.print("str_ration: ");
         Serial.println(ration_function);
         setAlarm(0,timer_hour_function,timer_min_function);
-        //PWM_Control(ration_function);
+       // PWM_Control(ration_function);
     }
 
     vTaskDelay(3000/portTICK_PERIOD_MS);
